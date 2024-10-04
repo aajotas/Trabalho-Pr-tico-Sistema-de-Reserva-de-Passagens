@@ -1,0 +1,156 @@
+#include <stdio.h>
+#include <cstdlib>
+#include <ctype.h>
+
+int main() {
+    char setor;
+    int cadeira;
+    int assento;
+    char setoresDisponiveis[] = {'A', 'B', 'C', 'D', 'E'};
+    char opcao = 'S';
+    char tipoPassagem;
+
+    // Esse array aqui é o mapa dos assentos, com '0' pra livre e 'X' pra ocupado
+    char lugares[5][5] = {
+        {'0', '0', '0', '0', '0'},
+        {'0', '0', '0', '0', '0'},
+        {'0', '0', '0', '0', '0'},
+        {'0', '0', '0', '0', '0'},
+        {'0', '0', '0', '0', '0'}
+    };
+
+    // Loop principal, o sistema vai continuar rodando enquanto o atendente quiser reservar
+    while (opcao == 'S' || opcao == 's') {
+        int linhaAtual = 1;
+        int setorValido = 0;
+        bool lotado = true;
+
+        // Mostra o mapa de assentos
+        printf("\n---------------------------------------------------------------------");
+        printf("\n      SETOR");
+        printf("\n   A  B  C  D  E");
+        printf("\n");
+
+        // Dá uma geral no status dos assentos: livres ou ocupados
+        for (int i = 0; i < 5; ++i) {
+            printf("%i", linhaAtual);
+            printf("|");
+            linhaAtual++;
+
+            for (int j = 0; j < 5; ++j) {
+                if (lugares[i][j] != 'X') {
+                    lotado = false;  // Se tem assento livre, o busão não tá lotado
+                }
+
+                printf(" %c ", lugares[i][j]);  // Mostra o status de cada assento
+            }
+            printf("\n");
+        }
+
+        // Legenda pra galera entender: X é reservado, 0 tá livre
+        printf("\n Assento ocupado = X | Assento disponível = 0");
+        printf("\n---------------------------------------------------------------------");
+
+        // Se não tem mais lugar, cabou
+        if (lotado) {
+            printf("\n Ônibus cheio! Por favor, aguarde o próximo.\n");
+            break;
+        }
+
+        // Pergunta que tipo de passagem o cliente tá comprando
+        printf("\n Escolha o tipo de passagem (Econômico = E, Executivo = X): ");
+        scanf(" %c", &tipoPassagem);
+        tipoPassagem = toupper(tipoPassagem);
+
+        // Agora o atendente escolhe o setor que quer reservar
+        printf("\n Escolha o setor (A-E): ");
+        scanf(" %c", &setor);
+        setor = toupper(setor);
+
+        // Checa se o setor digitado é válido (A até E)
+        for (int i = 0; i <= 4; i++) {
+            if (setor == setoresDisponiveis[i]) {
+                setorValido = 1;  // Se é válido, continua
+            }
+        }
+
+        // Se o setor for inválido, volta pro começo
+        if (setorValido == 0) {
+            system("cls");
+            printf(" Setor inválido! Selecione um setor correto.\n");
+            continue;
+        }
+
+        // Aqui são as regras pra tipo de passagem
+        if (tipoPassagem == 'E') {  // Se for Econômica...
+            if (setor == 'A' || setor == 'F') {
+                printf(" Assentos nas janelas (A e F) são exclusivos para passagens Executivas.\n");
+                continue;  // Proíbe a reserva das janelas pra Econômico
+            }
+        } else if (tipoPassagem == 'X') {  // Se for Executivo...
+            if (setor != 'A' && setor != 'F') {
+                printf(" Recomendamos reservar as poltronas nas janelas (A e F) para passagens Executivas.\n");
+            }
+        } else {
+            printf(" Tipo de passagem inválido! Escolha entre Econômico (E) ou Executivo (X).\n");
+            continue;
+        }
+
+        // Agora o atendente escolhe a cadeira (linha)
+        printf("\n Informe a cadeira (1-5): ");
+        scanf("%i", &assento);
+
+        // Verifica se a cadeira escolhida é válida (1 a 5)
+        if (assento < 1 || assento > 5) {
+            system("cls");
+            printf(" Cadeira inválida! Escolha uma entre 1 e 5.\n");
+            continue;
+        }
+
+        // Traduz o setor pra número de coluna na matriz
+        switch (setor) {
+            case 'A':
+                cadeira = 0;
+                break;
+            case 'B':
+                cadeira = 1;
+                break;
+            case 'C':
+                cadeira = 2;
+                break;
+            case 'D':
+                cadeira = 3;
+                break;
+            case 'E':
+                cadeira = 4;
+                break;
+        }
+
+        // Dá aquela ajustada básica pro índice da matriz
+        assento--;
+
+        system("cls");
+
+        // Se o assento já tá ocupado, manda escolher outro
+        if (lugares[assento][cadeira] == 'X') {
+            printf(" Esse assento já está reservado. Por favor, escolha outro.\n");
+            continue;
+        } else {
+            // Reserva o assento
+            lugares[assento][cadeira] = 'X';
+            printf(" Assento reservado com sucesso: %c%i \n", setor, assento + 1);
+        }
+
+        // Pergunta se o atendente quer continuar reservando mais assentos
+        printf("\n Deseja fazer outra reserva? (S/N): ");
+        scanf(" %c", &opcao);
+        opcao = toupper(opcao);
+
+        if (opcao == 'N') {
+            printf(" Encerrando o sistema de reservas...\n");
+            break;  // Se não quiser, encerra o programa
+        }
+    }
+
+    return 0;
+}
